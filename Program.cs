@@ -9,9 +9,6 @@ namespace Synacor_Challenge
     {
         public static void Main(string[] args)
         {
-            // Email: raz@razfriman.com
-            // Password: uE4R9py32fgVvJbrZ@*cYt9H
-
             var code1 = ParseArchSpecCode();
             Console.WriteLine(code1);
 
