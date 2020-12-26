@@ -8,14 +8,16 @@ namespace SynacorChallenge
 {
     public class VirtualMachine
     {
-        public ushort[] Registers { get; set; } = new ushort[8];
-        public static int Modulus = 32768;
-        public Stack<ushort> Stack { get; set; } = new();
+        public ushort[] Registers { get; } = new ushort[8];
+        public const int Modulus = 32768;
+        public Stack<ushort> Stack { get; } = new();
 
-        public ushort[] Data { get; set; }
+        public ushort[] Data { get; }
 
-        public Queue<ushort> Inputs { get; private init; } = new();
+        public Queue<ushort> Inputs { get; } = new();
         public ushort InstructionPointer;
+
+        public List<string> AsmHistory { get; } = new();
 
         public VirtualMachine()
         {
@@ -65,18 +67,21 @@ namespace SynacorChallenge
                 switch (opcode)
                 {
                     case Opcode.Noop:
+                        AsmHistory.Add($"{InstructionPointer}: Noop");
                         InstructionPointer += 1;
                         break;
                     case Opcode.Out:
                     {
                         var a = GetArgument(InstructionPointer + 1);
                         output.Add(a);
+                        AsmHistory.Add($"{InstructionPointer}: Out {a} ('{(char) a}')");
                         InstructionPointer += 2;
                         break;
                     }
                     case Opcode.Jmp:
                     {
                         var a = GetArgument(InstructionPointer + 1);
+                        AsmHistory.Add($"{InstructionPointer}: Jmp {a}");
                         InstructionPointer = a;
                         break;
                     }
@@ -84,6 +89,7 @@ namespace SynacorChallenge
                     {
                         var a = GetArgument(InstructionPointer + 1);
                         var b = GetArgument(InstructionPointer + 2);
+                        AsmHistory.Add($"{InstructionPointer}: Jt {a} {b}");
                         if (a != 0)
                         {
                             InstructionPointer = b;
@@ -99,6 +105,7 @@ namespace SynacorChallenge
                     {
                         var a = GetArgument(InstructionPointer + 1);
                         var b = GetArgument(InstructionPointer + 2);
+                        AsmHistory.Add($"{InstructionPointer}: Jf {a} {b}");
                         if (a == 0)
                         {
                             InstructionPointer = b;
@@ -115,6 +122,7 @@ namespace SynacorChallenge
                         var a = InstructionPointer + 1;
                         var b = GetArgument(InstructionPointer + 2);
                         SetValue(a, b);
+                        AsmHistory.Add($"{InstructionPointer}: Set {a} {b}");
                         InstructionPointer += 3;
                         break;
                     }
@@ -126,6 +134,7 @@ namespace SynacorChallenge
                         var b = GetArgument(InstructionPointer + 2);
                         var c = GetArgument(InstructionPointer + 3);
                         SetValue(a, (ushort) ((b + c) % Modulus));
+                        AsmHistory.Add($"{InstructionPointer}: Add {a} {b} {c}");
                         InstructionPointer += 4;
                         break;
                     }
@@ -133,6 +142,7 @@ namespace SynacorChallenge
                     {
                         var a = GetArgument(InstructionPointer + 1);
                         Stack.Push(a);
+                        AsmHistory.Add($"{InstructionPointer}: Push {a}");
                         InstructionPointer += 2;
                         break;
                     }
@@ -141,6 +151,7 @@ namespace SynacorChallenge
                         var pop = Stack.Pop();
                         var a = InstructionPointer + 1;
                         SetValue(a, pop);
+                        AsmHistory.Add($"{InstructionPointer}: Pop {a}");
                         InstructionPointer += 2;
                         break;
                     }
@@ -150,6 +161,7 @@ namespace SynacorChallenge
                         var b = GetArgument(InstructionPointer + 2);
                         var c = GetArgument(InstructionPointer + 3);
                         SetValue(a, b == c ? 1 : 0);
+                        AsmHistory.Add($"{InstructionPointer}: Eq {a} {b} {c}");
                         InstructionPointer += 4;
                         break;
                     }
@@ -159,6 +171,7 @@ namespace SynacorChallenge
                         var b = GetArgument(InstructionPointer + 2);
                         var c = GetArgument(InstructionPointer + 3);
                         SetValue(a, b > c ? 1 : 0);
+                        AsmHistory.Add($"{InstructionPointer}: Gt {a} {b} {c}");
                         InstructionPointer += 4;
                         break;
                     }
@@ -168,6 +181,7 @@ namespace SynacorChallenge
                         var b = GetArgument(InstructionPointer + 2);
                         var c = GetArgument(InstructionPointer + 3);
                         SetValue(a, (ushort) (b * c % Modulus));
+                        AsmHistory.Add($"{InstructionPointer}: Mult {a} {b} {c}");
                         InstructionPointer += 4;
                         break;
                     }
@@ -178,6 +192,7 @@ namespace SynacorChallenge
                         var b = GetArgument(InstructionPointer + 2);
                         var c = GetArgument(InstructionPointer + 3);
                         SetValue(a, (ushort) (b % c));
+                        AsmHistory.Add($"{InstructionPointer}: Mod {a} {b} {c}");
                         InstructionPointer += 4;
                         break;
                     }
@@ -187,6 +202,7 @@ namespace SynacorChallenge
                         var b = GetArgument(InstructionPointer + 2);
                         var c = GetArgument(InstructionPointer + 3);
                         SetValue(a, (ushort) (b & c));
+                        AsmHistory.Add($"{InstructionPointer}: And {a} {b} {c}");
                         InstructionPointer += 4;
                         break;
                     }
@@ -196,6 +212,7 @@ namespace SynacorChallenge
                         var b = GetArgument(InstructionPointer + 2);
                         var c = GetArgument(InstructionPointer + 3);
                         SetValue(a, (ushort) (b | c));
+                        AsmHistory.Add($"{InstructionPointer}: Or {a} {b} {c}");
                         InstructionPointer += 4;
                         break;
                     }
@@ -204,12 +221,14 @@ namespace SynacorChallenge
                         var a = InstructionPointer + 1;
                         var b = GetArgument(InstructionPointer + 2);
                         SetValue(a, (ushort) (~b & 0b0111_1111_1111_1111));
+                        AsmHistory.Add($"{InstructionPointer}: Not {a} {b}");
                         InstructionPointer += 3;
                         break;
                     }
                     case Opcode.Call:
                     {
                         var a = GetArgument(InstructionPointer + 1);
+                        AsmHistory.Add($"{InstructionPointer}: Call {a}");
                         Stack.Push((ushort) (InstructionPointer + 2));
                         InstructionPointer = a;
                         break;
@@ -219,6 +238,7 @@ namespace SynacorChallenge
                         var a = InstructionPointer + 1;
                         var b = Data[GetArgument(InstructionPointer + 2)];
                         SetValue(a, b);
+                        AsmHistory.Add($"{InstructionPointer}: Rmem {a} {b}");
                         InstructionPointer += 3;
                         break;
                     }
@@ -227,6 +247,7 @@ namespace SynacorChallenge
                         var a = GetArgument(InstructionPointer + 1);
                         var b = GetArgument(InstructionPointer + 2);
                         Data[a] = b;
+                        AsmHistory.Add($"{InstructionPointer}: Wmem {a} {b}");
                         InstructionPointer += 3;
                         break;
                     }
@@ -234,10 +255,12 @@ namespace SynacorChallenge
                     {
                         if (Stack.Count == 0)
                         {
+                            AsmHistory.Add($"{InstructionPointer}: Ret");
                             return new VmOutput {Data = output.ToImmutableList()};
                         }
 
                         var pop = Stack.Pop();
+                        AsmHistory.Add($"{InstructionPointer}: Ret {pop}");
                         InstructionPointer = pop;
                         break;
                     }
@@ -248,6 +271,7 @@ namespace SynacorChallenge
                             var a = InstructionPointer + 1;
                             var b = Inputs.Dequeue();
                             SetValue(a, b);
+                            AsmHistory.Add($"{InstructionPointer}: In {a} {b} ('{(char) b}')");
                             InstructionPointer += 2;
                         }
                         else
@@ -286,8 +310,8 @@ namespace SynacorChallenge
             var value = Data[address];
             return value switch
             {
-                ushort literal when value >= 0 && value <= 32767 => literal,
-                ushort register when value >= 32768 && value <= 32775 => Registers[register - 32768],
+                { } literal when value <= 32767 => literal,
+                { } register when value >= 32768 && value <= 32775 => Registers[register - 32768],
                 _ => throw new Exception($"numbers 32776..65535 are invalid. Value: ${value}")
             };
         }
