@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <RootNamespace>Synacor_Challenge</RootNamespace>
+    <RootNamespace>SynacorChallenge</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <None Update="challenge.bin">

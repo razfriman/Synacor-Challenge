@@ -1,14 +1,17 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Synacor_Challenge
+namespace SynacorChallenge
 {
     public class Program
     {
         public static void Main(string[] args)
         {
+            // Email: raz@razfriman.com
+            // Password: uE4R9py32fgVvJbrZ@*cYt9H
             var code1 = ParseArchSpecCode();
             Console.WriteLine(code1);
 
@@ -17,6 +20,9 @@ namespace Synacor_Challenge
 
             var data = File.ReadAllBytes("challenge.bin");
             var vm = new VirtualMachine(data);
+            var output = vm.Run();
+            var outputStr = Encoding.Unicode.GetString(output.SelectMany(x => BitConverter.GetBytes(x)).ToArray());
+            Console.WriteLine(outputStr);
             Console.WriteLine("Done!");
         }
 
@@ -32,8 +38,7 @@ namespace Synacor_Challenge
         {
             var lines = File.ReadAllLines("challenge.bin", Encoding.Unicode);
             var unicodeCode = lines[2][74..];
-            var code = Encoding.ASCII.GetString(Encoding.Convert(Encoding.Unicode, Encoding.ASCII,
-                Encoding.Unicode.GetBytes(unicodeCode)));
+            var code = Encoding.ASCII.GetString(Encoding.Convert(Encoding.Unicode, Encoding.ASCII, Encoding.Unicode.GetBytes(unicodeCode)));
             return code;
         }
     }
