@@ -32,14 +32,14 @@ namespace SynacorChallenge
             vm.Run("down");
             vm.Run("east");
             vm.Run("take empty lantern");
-            vm.Run("take empty lantern");
             vm.Run("west");
             vm.Run("west");
             vm.Run("passage");
             vm.Run("ladder");
             vm.Run("west");
             vm.Run("south");
-            vm.Run("north");
+            var code5 = vm.Run("north").Ascii[64..76];
+            Console.WriteLine(code5);
             vm.Run("take can");
             vm.Run("use can");
             vm.Run("use lantern");
@@ -73,15 +73,51 @@ namespace SynacorChallenge
             vm.Run("use corroded coin");
             vm.Run("north");
             vm.Run("take teleporter");
-            vm.Run("use teleporter");
+            var code6 = vm.Run("use teleporter").Ascii[119..131];
+            Console.WriteLine(code6);
             vm.Run("take business card");
             vm.Run("take strange book");
-            vm.Run("look strange book", true);
+            vm.Run("look strange book");
+            vm.Data[0x156d] = 6;
+            vm.Data[0x1571] = 21;
+            vm.Data[0x1572] = 21;
+            vm.Registers[7] = SolveAckermann();
+            var code7 = vm.Run("use teleporter").Ascii[397..409];
+            Console.WriteLine(code7);
+            vm.Run("north");
+            vm.Run("north");
+            vm.Run("north");
+            vm.Run("north");
+            vm.Run("north");
+            vm.Run("north");
+            vm.Run("north");
+            vm.Run("east");
+            vm.Run("take journal");
+            vm.Run("west");
+            vm.Run("north");
+            vm.Run("north");
+            vm.Run("take orb");
             vm.Run("look", true);
-            var history = vm.AsmHistory;
-            //history.ForEach(Console.WriteLine);
+            // Vault
+            //vm.AsmHistory.ForEach(Console.WriteLine);
             vm.RunInteractive();
             Console.WriteLine("Done!");
+        }
+
+        private static ushort SolveAckermann()
+        {
+            
+            ushort x = 0;
+            for (ushort hx = 0; hx <= 0xffff; hx++)
+            {
+                if (Teleporter.Ackermann(hx, 4, 1) == 6)
+                {
+                    x = hx;
+                    break;
+                }
+            }
+
+            return x;
         }
 
         public static string ParseArchSpecCode()

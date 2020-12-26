@@ -42,6 +42,10 @@ namespace SynacorChallenge
 
         public VmOutput Run(string s, bool printOutput = false)
         {
+            if (printOutput)
+            {
+                Console.WriteLine("Command: " + s);
+            }
             var inputs = s.Select(c => (ushort) c).ToList();
             inputs.Add('\n');
             var output = Run(inputs.ToArray());
@@ -63,6 +67,10 @@ namespace SynacorChallenge
             var output = new List<ushort>();
             while (true)
             {
+                if (InstructionPointer == 6027)
+                {
+                    // Console.WriteLine("at 6027");
+                }
                 var opcode = GetOpcode(InstructionPointer);
                 switch (opcode)
                 {
